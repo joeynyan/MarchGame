@@ -17,8 +17,12 @@ GREEN = (0, 255, 0);
 BLUE = (0, 0, 255);
 
 catImg = pygame.image.load('cat.png')
-catx = 20
-caty = 10
+mousex = 0
+mousey = 0
+width = catImg.get_width()/2
+height = catImg.get_height()/2
+catx = mousex - width
+caty = mousey - height
 direction = 'right'
 # DISPLAYSURF.fill(WHITE)
 # pygame.draw.polygon(DISPLAYSURF, GREEN, ((146, 0), (291, 106), (236, 277), (56, 277), (0, 106)))
@@ -37,28 +41,39 @@ direction = 'right'
 # del pixObj
 
 while True:
-	DISPLAYSURF.fill(WHITE)
+	DISPLAYSURF.fill(BLUE)
 
-	if direction == 'right':
-		catx+=5
-		if catx == 280:
-			direction = 'down'
-	elif direction == 'down':
-		caty+=5
-		if caty == 220:
-			direction = 'left'
-	elif direction == 'left':
-		catx-=5
-		if catx == 20:
-			direction = 'up'
-	elif direction == 'up':
-		caty-=5
-		if caty == 10:
-			direction = 'right'
-	DISPLAYSURF.blit(catImg, (catx, caty));		
+	# if direction == 'right':
+	# 	catx+=5
+	# 	if catx == 280:
+	# 		direction = 'down'
+	# elif direction == 'down':
+	# 	caty+=5
+	# 	if caty == 220:
+	# 		direction = 'left'
+	# elif direction == 'left':
+	# 	catx-=5
+	# 	if catx == 20:
+	# 		direction = 'up'
+	# elif direction == 'up':
+	# 	caty-=5
+	# 	if caty == 10:
+	# 		direction = 'right'
+	
+	DISPLAYSURF.blit(catImg, (catx, caty));	#copies cat image to next location	
+	
 	for event in pygame.event.get():
 		if event.type == QUIT:
 			pygame.quit()
 			sys.exit()
+		elif event.type == MOUSEMOTION:
+			mousex, mousey = event.pos
+			catx = mousex - width
+			caty = mousey - height
+		elif event.type == MOUSEBUTTONUP:
+			mousex, mousey = event.pos
+		elif event.type == MOUSEBUTTONDOWN:
+			mousex, mousey = event.pos
+			mouseClicked = True;
 	pygame.display.update()
 	fpsClock.tick(FPS)
