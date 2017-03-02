@@ -40,8 +40,25 @@ direction = 'right'
 # pixObj[488][388] = BLACK
 # del pixObj
 
+# bullet class
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self):
+        super(Bullet, self).__init__()
+ 		
+ 		# defines size of bullet 
+        self.image = pygame.Surface([4, 10]) 
+        self.image.fill(RED)
+ 
+        self.rect = self.image.get_rect() # bullet is a rectangle
+ 
+    def update(self):
+        self.rect.y -= 5
+
+# allows for multiple bullets
+bullet_list = pygame.sprite.Group()
+
 while True:
-	DISPLAYSURF.fill(BLUE)
+	DISPLAYSURF.fill(WHITE)
 
 	# if direction == 'right':
 	# 	catx+=5
@@ -61,6 +78,8 @@ while True:
 	# 		direction = 'right'
 	
 	DISPLAYSURF.blit(catImg, (catx, caty));	#copies cat image to next location	
+	bullet_list.update()
+	bullet_list.draw(DISPLAYSURF)
 	
 	for event in pygame.event.get():
 		if event.type == QUIT:
@@ -75,5 +94,17 @@ while True:
 		elif event.type == MOUSEBUTTONDOWN:
 			mousex, mousey = event.pos
 			mouseClicked = True;
+			# bullet = Bullet()
+			# bullet.rect.x = mousex
+			# bullet.rect.y = mousey
+
+	bullet = Bullet()
+	bullet.rect.x = mousex
+	bullet.rect.y = mousey
+	bullet_list.add(bullet)
+			
+	for bullet in bullet_list:
+		if bullet.rect.y <= -10:
+			bullet_list.remove(bullet)
 	pygame.display.update()
 	fpsClock.tick(FPS)
