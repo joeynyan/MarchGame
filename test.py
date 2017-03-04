@@ -1,4 +1,4 @@
-import pygame, sys
+import pygame, sys, random
 from pygame.locals import *
 
 pygame.init()
@@ -6,8 +6,10 @@ FPS = 30 #frames per sec
 fpsClock = pygame.time.Clock()
 
 # game window
-DISPLAYSURF = pygame.display.set_mode((430, 350), 0, 32)
-pygame.display.set_caption('Hello World!')
+GameWidth = 500
+GameHeight = 600
+DISPLAYSURF = pygame.display.set_mode((GameWidth, GameHeight), 0, 32)
+pygame.display.set_caption('Cat Game')
 
 # colors
 BLACK = (0,0,0);
@@ -16,70 +18,71 @@ RED = (255, 0 ,0);
 GREEN = (0, 255, 0);
 BLUE = (0, 0, 255);
 
-catImg = pygame.image.load('cat.png')
+# sets mouse location
 mousex = 0
 mousey = 0
-width = catImg.get_width()/2
-height = catImg.get_height()/2
-catx = mousex - width
-caty = mousey - height
-direction = 'right'
-# DISPLAYSURF.fill(WHITE)
-# pygame.draw.polygon(DISPLAYSURF, GREEN, ((146, 0), (291, 106), (236, 277), (56, 277), (0, 106)))
-# pygame.draw.line(DISPLAYSURF, BLUE, (60, 60), (120, 60), 4)
-# pygame.draw.line(DISPLAYSURF, BLUE, (120, 60), (60, 120))
-# pygame.draw.line(DISPLAYSURF, BLUE, (60, 120), (120, 120), 4)
-# pygame.draw.circle(DISPLAYSURF, BLUE, (300, 50), 20, 0)
-# pygame.draw.rect(DISPLAYSURF, red, (200, 140, 100, 50))
 
-# pixObj = pygame.PixelArray(DISPLAYSURF)
-# pixObj[480][380] = BLACK
-# pixObj[482][382] = BLACK
-# pixObj[484][384] = BLACK
-# pixObj[486][386] = BLACK
-# pixObj[488][388] = BLACK
-# del pixObj
+# main character class
+class Cat(pygame.sprite.Sprite):
+	def __init__(self):
+		super(Cat, self).__init__()
+
+		self.image = pygame.image.load('cat.png')
+		self.rect = self.image.get_rect()
+		self.width = self.image.get_width()/2
+		self.height = self.image.get_height()/2
+
+	def update(self):
+		self.rect.y = mousey - self.height
+		self.rect.x = mousex - self.width
+
+class Enemy(pygame.sprite.Sprite):
+	def __init__(self):
+		super(Enemy, self).__init__()
+
+		self.image = pygame.Surface([10,10])
+		self.image.fill(BLUE)
+		self.rect = self.image.get_rect()
+
+	def update(self):
+		self.rect.y += 3
+
+	def loc(self):
+		self.rect.x = random.randint(0, GameWidth)
+		self.rect.y = -20
 
 # bullet class
 class Bullet(pygame.sprite.Sprite):
     def __init__(self):
         super(Bullet, self).__init__()
  		
- 		# defines size of bullet 
-        self.image = pygame.Surface([4, 10]) 
-        self.image.fill(RED)
- 
+ 		# defines size of bullet and colour
+        self.image = pygame.Surface([4, 4]) 
+        self.image.fill(RED) 
         self.rect = self.image.get_rect() # bullet is a rectangle
  
     def update(self):
-        self.rect.y -= 5
+        self.rect.y -= 10
 
-# allows for multiple bullets
+    def shoot(self):
+    	self.rect.x = mousex
+    	self.rect.y = mousey
+
+catImg = Cat() # creates your main character
+
+# Groups of Sprites (Required for Draw to work)
+cat_list = pygame.sprite.Group()
+cat_list.add(catImg)
+enemy_list = pygame.sprite.Group()
 bullet_list = pygame.sprite.Group()
 
 while True:
 	DISPLAYSURF.fill(WHITE)
-
-	# if direction == 'right':
-	# 	catx+=5
-	# 	if catx == 280:
-	# 		direction = 'down'
-	# elif direction == 'down':
-	# 	caty+=5
-	# 	if caty == 220:
-	# 		direction = 'left'
-	# elif direction == 'left':
-	# 	catx-=5
-	# 	if catx == 20:
-	# 		direction = 'up'
-	# elif direction == 'up':
-	# 	caty-=5
-	# 	if caty == 10:
-	# 		direction = 'right'
-	
-	DISPLAYSURF.blit(catImg, (catx, caty));	#copies cat image to next location	
-	bullet_list.update()
-	bullet_list.draw(DISPLAYSURF)
+	cat_list.draw(DISPLAYSURF) #draws cat
+	enemy_list.draw(DISPLAYSURF) # draws enemy
+	enemy_list.update() # makes enemies move
+	bullet_list.draw(DISPLAYSURF) # draws the bullets
+	bullet_list.update() # ensures the bullets move
 	
 	for event in pygame.event.get():
 		if event.type == QUIT:
@@ -87,24 +90,34 @@ while True:
 			sys.exit()
 		elif event.type == MOUSEMOTION:
 			mousex, mousey = event.pos
-			catx = mousex - width
-			caty = mousey - height
+			catImg.update()
 		elif event.type == MOUSEBUTTONUP:
-			mousex, mousey = event.pos
+			pass
 		elif event.type == MOUSEBUTTONDOWN:
-			mousex, mousey = event.pos
-			mouseClicked = True;
-			# bullet = Bullet()
-			# bullet.rect.x = mousex
-			# bullet.rect.y = mousey
+			pass
 
+	enemy = Enemy()
+	enemy.loc()
+	enemy_list.add(enemy)
+
+	# Bullet creation code. Everytime it updates it'll create a bullet
 	bullet = Bullet()
-	bullet.rect.x = mousex
-	bullet.rect.y = mousey
+	bullet.shoot()
 	bullet_list.add(bullet)
-			
+
+	# Removes Bullet sprite when it goes off the screen
 	for bullet in bullet_list:
+		hit_list = pygame.sprite.spritecollide(bullet, enemy_list, True)
+		for enemy in hit_list:
+			bullet_list.remove(bullet)
+			enemy_list.remove(enemy)
+
 		if bullet.rect.y <= -10:
 			bullet_list.remove(bullet)
+
+	for enemy in enemy_list:
+		if enemy.rect.y >= GameHeight+20:
+			enemy_list.remove(enemy)
+
 	pygame.display.update()
 	fpsClock.tick(FPS)
