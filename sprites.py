@@ -23,6 +23,7 @@ class Cat(pygame.sprite.Sprite):
 		self.rect.y = mousey - self.height
 		self.rect.x = mousex - self.width
 
+# Enemy Class
 class Enemy(pygame.sprite.Sprite):
 	def __init__(self):
 		super(Enemy, self).__init__()
