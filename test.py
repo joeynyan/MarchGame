@@ -1,4 +1,4 @@
-import sprites, pygame, sys, random
+import sprites, scenes, pygame, sys, random
 from pygame.locals import *
 
 pygame.init()
@@ -10,6 +10,7 @@ GameWidth = 500
 GameHeight = 600
 DISPLAYSURF = pygame.display.set_mode((GameWidth, GameHeight), 0, 32)
 pygame.display.set_caption('Cat Game')
+# title = scenes.TitleScene()
 
 # colors
 BLACK = (0,0,0);
@@ -23,11 +24,11 @@ mousex = 0
 mousey = 0
 
 # creates the main character
-catImg = sprites.Cat() 
+cat = sprites.Cat() 
 
 # Groups of Sprites (Required for Draw to work)
 cat_list = pygame.sprite.Group()
-cat_list.add(catImg)
+cat_list.add(cat)
 enemy_list = pygame.sprite.Group()
 bullet_list = pygame.sprite.Group()
 
@@ -45,7 +46,7 @@ while True:
 			sys.exit()
 		elif event.type == MOUSEMOTION:
 			mousex, mousey = event.pos
-			catImg.update(mousex, mousey)
+			cat.update(mousex, mousey)
 		elif event.type == MOUSEBUTTONUP:
 			pass
 		elif event.type == MOUSEBUTTONDOWN:
@@ -77,6 +78,8 @@ while True:
 			enemy_list.remove(enemy)
 			cat_list.remove(cat)
 			print('cat dead')
+			pygame.quit()
+			sys.exit()
 
 		if enemy.rect.y >= GameHeight+20:
 			enemy_list.remove(enemy)
