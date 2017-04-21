@@ -133,8 +133,17 @@ class GameScene(Scene):
 	def __init__(self, DISPLAYSURF, level):
 		super(GameScene, self).__init__()
 		
+		# screen and starting level (level determines how quickly enemy spawns (too quick))
 		self.DISPLAYSURF = DISPLAYSURF
 		self.level = level
+		self.clock = pygame.time.Clock()
+
+		# clock = level*20 seconds
+		pygame.time.set_timer(pygame.USEREVENT, 2*10*level*20)
+		self.font = pygame.font.SysFont('Consolas', 30)
+		self.counter = 2*level*20
+		self.text = str(level*20/2).rjust(3)
+
 		# sets mouse location
 		self.mousex = 0
 		self.mousey = 0
@@ -151,6 +160,7 @@ class GameScene(Scene):
 
 
 	def render(self, DISPLAYSURF):
+		# Drawing/updating code
 		DISPLAYSURF.fill(WHITE)
 		self.cat_list.draw(DISPLAYSURF) #draws cat
 		self.enemy_list.draw(DISPLAYSURF) # draws enemy
@@ -159,6 +169,7 @@ class GameScene(Scene):
 		self.bullet_list.update() # ensures the bullets move
 		self.ebullet_list.draw(DISPLAYSURF)
 		self.ebullet_list.update()
+		DISPLAYSURF.blit(self.font.render(self.text, True, (0, 0, 0)), (32, 48))
 
 		# Enemy Creation Code. Everytime it updates it creates an enemy
 		enemy = sprites.Enemy()
@@ -186,6 +197,10 @@ class GameScene(Scene):
 			print 'Gameover'
 			self.manager.go_to(GameOver(self.DISPLAYSURF))
 
+		if self.counter <= 0:
+			print 'Level up'
+			self.level += 1
+			self.manager.go_to(GameScene(self.DISPLAYSURF, self.level))
 		for event in events:
 			if event.type == MOUSEMOTION:
 				self.mousex, self.mousey = event.pos
@@ -194,3 +209,7 @@ class GameScene(Scene):
 				pass
 			elif event.type == MOUSEBUTTONDOWN:
 				pass
+			elif event.type == pygame.USEREVENT:
+				self.counter -= 1;
+				self.text = str(self.counter/2).rjust(3)
+
