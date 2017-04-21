@@ -14,7 +14,7 @@ GREEN = (0, 255, 0);
 BLUE = (0, 0, 255);
 
 def main():
-	global DISPLAYSURF 
+	# global DISPLAYSURF
 
 	pygame.init()
 	FPS = 30
@@ -23,19 +23,26 @@ def main():
 	DISPLAYSURF = pygame.display.set_mode((GameWidth, GameHeight))
 	pygame.display.set_caption(Caption)
 
-	title = scenes.TitleScene()
+	manager = scenes.SceneManager(DISPLAYSURF)
+	# title = scenes.TitleScene(DISPLAYSURF)
 
 
 	while True:
 		DISPLAYSURF.fill(WHITE)
-		title.render(DISPLAYSURF)
-		for event in pygame.event.get():
-			if event.type == QUIT:
+		manager.scene.render(DISPLAYSURF)
+		if pygame.event.get(QUIT):
 				pygame.quit()
 				sys.exit()
+		manager.scene.handle_events(pygame.event.get())
 
 		pygame.display.update()
 		fpsClock.tick(FPS)
 
+def startGame():
+	cat = sprites.Cat()
+	cat_list = pygame.sprite.Group()
+	cat_list.add(cat)
+	enemy_list = pygame.sprite.Group()
+	bullet_list = pygame.sprite.Group()
 
 main()

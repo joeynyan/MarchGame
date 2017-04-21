@@ -1,9 +1,10 @@
-import sprites, scenes, pygame, sys, random
+import sprites, pygame, sys, random #, scenes
 from pygame.locals import *
 
 pygame.init()
 FPS = 30 #frames per sec
 fpsClock = pygame.time.Clock()
+gameover = False
 
 # game window
 GameWidth = 500
@@ -24,7 +25,7 @@ mousex = 0
 mousey = 0
 
 # creates the main character
-cat = sprites.Cat() 
+cat = sprites.Cat()
 
 # Groups of Sprites (Required for Draw to work)
 cat_list = pygame.sprite.Group()
@@ -39,11 +40,13 @@ while True:
 	enemy_list.update() # makes enemies move
 	bullet_list.draw(DISPLAYSURF) # draws the bullets
 	bullet_list.update() # ensures the bullets move
-	
+
 	for event in pygame.event.get():
 		if event.type == QUIT:
 			pygame.quit()
 			sys.exit()
+		elif gameover == True:
+			pass
 		elif event.type == MOUSEMOTION:
 			mousex, mousey = event.pos
 			cat.update(mousex, mousey)
@@ -78,8 +81,8 @@ while True:
 			enemy_list.remove(enemy)
 			cat_list.remove(cat)
 			print('cat dead')
-			pygame.quit()
-			sys.exit()
+			gameover = True
+
 
 		if enemy.rect.y >= GameHeight+20:
 			enemy_list.remove(enemy)
