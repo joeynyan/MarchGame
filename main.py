@@ -14,8 +14,6 @@ GREEN = (0, 255, 0);
 BLUE = (0, 0, 255);
 
 def main():
-	# global DISPLAYSURF
-
 	pygame.init()
 	FPS = 30
 	fpsClock = pygame.time.Clock()
@@ -24,8 +22,6 @@ def main():
 	pygame.display.set_caption(Caption)
 
 	manager = scenes.SceneManager(DISPLAYSURF)
-	# title = scenes.TitleScene(DISPLAYSURF)
-
 
 	while True:
 		DISPLAYSURF.fill(WHITE)
@@ -38,11 +34,5 @@ def main():
 		pygame.display.update()
 		fpsClock.tick(FPS)
 
-def startGame():
-	cat = sprites.Cat()
-	cat_list = pygame.sprite.Group()
-	cat_list.add(cat)
-	enemy_list = pygame.sprite.Group()
-	bullet_list = pygame.sprite.Group()
-
+# Starts Game
 main()

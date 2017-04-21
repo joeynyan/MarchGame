@@ -1,8 +1,8 @@
 import pygame, random
 from pygame.locals import *
 
-GameWidth = 500
-GameHeight = 600
+# GameWidth = 500
+# GameHeight = 600
 
 BLACK = (0,0,0);
 WHITE = (255, 255, 255);
@@ -12,15 +12,17 @@ BLUE = (0, 0, 255);
 
 # main character class
 class Cat(pygame.sprite.Sprite):
-	def __init__(self):
+	def __init__(self, DISPLAYSURF):
 		super(Cat, self).__init__()
 
 		self.image = pygame.image.load('cat.png')
 		self.rect = self.image.get_rect()
-		self.rect.x = GameWidth/2
-		self.rect.y = GameHeight/2 
+		 
 		self.width = self.image.get_width()/2
 		self.height = self.image.get_height()/2
+
+		self.rect.x = DISPLAYSURF.get_width()/2 - self.width
+		self.rect.y = DISPLAYSURF.get_height()/2 - self.height
 
 	def update(self, mousex, mousey):
 		self.rect.y = mousey - self.height
@@ -31,18 +33,28 @@ class Enemy(pygame.sprite.Sprite):
 	def __init__(self):
 		super(Enemy, self).__init__()
 
-		self.image = pygame.Surface([10,10])
+		self.image = pygame.Surface([30, 30])
 		self.image.fill(BLUE)
 		self.rect = self.image.get_rect()
+		self.midx = 0
+		self.midy = 0
+		self.speed = random.uniform(1, 2)
+
+	def getmidx(self):
+		return self.midx
+	def getmidy(self):
+		return self.midy
 
 	def update(self):
-		self.rect.y += 3
+		self.rect.y += 3*self.speed
 
-	def spawn(self):
-		self.rect.x = random.randint(0, GameWidth)
+	def spawn(self, DISPLAYSURF):
+		self.rect.x = random.randint(0, DISPLAYSURF.get_width())
 		self.rect.y = -20
+		self.midx = self.rect.x + self.rect.width/2
+		self.midy = self.rect.y + self.rect.height/2
 
-	def remove(self, enemy_list, cat_list):
+	def remove(self, enemy_list, cat_list, DISPLAYSURF):
 		# Removes enemies when they go off screen also detects cat collision
 		for enemy in enemy_list:
 			hit_list = pygame.sprite.spritecollide(enemy, cat_list, True)
@@ -51,7 +63,7 @@ class Enemy(pygame.sprite.Sprite):
 				cat_list.remove(cat)
 				print('cat dead')
 
-			if enemy.rect.y >= GameHeight+20:
+			if enemy.rect.y >= DISPLAYSURF.get_height()+20:
 				enemy_list.remove(enemy)
 
 # bullet class
@@ -81,3 +93,31 @@ class Bullet(pygame.sprite.Sprite):
 
 			if bullet.rect.y <= -10:
 				bullet_list.remove(bullet)
+
+class EnemyBullet(pygame.sprite.Sprite):
+	def __init__(self):
+		super(EnemyBullet, self).__init__()
+
+		# defines size of bullet and colour
+		self.image = pygame.Surface([4, 4]) 
+		self.image.fill(BLACK) 
+		self.rect = self.image.get_rect() # bullet is a rectangle
+ 
+ 	def update(self):
+		self.rect.y += 10
+
+	def spawn(self, x, y):
+		self.rect.x = x
+		self.rect.y = y
+
+	def remove(self, ebullet_list, cat_list, DISPLAYSURF):
+		# Removes Bullet sprite when it goes off the screen and kills enemies
+		for bullet in ebullet_list:
+			hit_list = pygame.sprite.spritecollide(bullet, cat_list, True)
+			for cat in hit_list:
+				ebullet_list.remove(bullet)
+				cat_list.remove(cat)
+
+			if bullet.rect.y >= DISPLAYSURF.get_height()+20:
+				ebullet_list.remove(bullet)
+

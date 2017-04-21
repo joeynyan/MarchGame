@@ -1,4 +1,4 @@
-import pygame, sys, sprites
+import pygame, sys, sprites, random
 from pygame.locals import *
 
 #Name of Game
@@ -11,20 +11,26 @@ RED = (255, 0 ,0);
 GREEN = (0, 255, 0);
 BLUE = (0, 0, 255);
 
-
+# Template for Scene Objects
 class Scene(object):
-    def __init__(self):
+	#Constructor
+    def __init__(self): 
         pass
 
+    # renders
     def render(self, screen):
         raise NotImplementedError
 
+    # for updates (not currently used)
     def update(self):
         raise NotImplementedError
 
+    # event handler
     def handle_events(self, events):
         raise NotImplementedError
 
+
+# Scene Manager for transitioning to difference scenes
 class SceneManager(object):
 	def __init__(self, DISPLAYSURF):
 		self.go_to(TitleScene(DISPLAYSURF))
@@ -33,6 +39,8 @@ class SceneManager(object):
 		self.scene = scene
 		self.scene.manager = self
 
+
+# Title Screen
 class TitleScene(object):
 	def __init__(self, DISPLAYSURF):
 		super(TitleScene, self).__init__()
@@ -46,7 +54,7 @@ class TitleScene(object):
 		self.rect = self.image.get_rect()
 		self.hwidth = self.image.get_width()/2
 		self.hheight = self.image.get_height()/2
-		# self.font = pygame.font.SysFont('Arial', 56) #font
+
 		# location coords
 		self.buttonlocation = (DISPLAYSURF.get_width()/2-self.hwidth, DISPLAYSURF.get_height()/2-self.hheight)
 		self.onButton = False
@@ -74,9 +82,12 @@ class TitleScene(object):
 				pass
 			elif event.type == MOUSEBUTTONDOWN:
 				if self.onButton == True:
-					self.manager.go_to(GameScene(self.DISPLAYSURF))
+					level = 1
+					self.manager.go_to(GameScene(self.DISPLAYSURF, level))
 				pass
 
+
+# Game over screen (currently just a blue/black button)
 class GameOver(object):
 	def __init__(self, DISPLAYSURF):
 		super(GameOver, self).__init__()
@@ -114,27 +125,29 @@ class GameOver(object):
 				pass
 			elif event.type == MOUSEBUTTONDOWN:
 				if self.onButton == True:
-					self.manager.go_to(GameScene(self.DISPLAYSURF))
+					level = 1
+					self.manager.go_to(GameScene(self.DISPLAYSURF, level))
 				pass
 
 class GameScene(Scene):
-	def __init__(self, DISPLAYSURF):
+	def __init__(self, DISPLAYSURF, level):
 		super(GameScene, self).__init__()
 		
 		self.DISPLAYSURF = DISPLAYSURF
+		self.level = level
 		# sets mouse location
 		self.mousex = 0
 		self.mousey = 0
 
 		# creates the main character
-		self.cat = sprites.Cat()
+		self.cat = sprites.Cat(DISPLAYSURF)
 
 		# Groups of Sprites (Required for Draw to work)
 		self.cat_list = pygame.sprite.Group()
 		self.cat_list.add(self.cat)
 		self.enemy_list = pygame.sprite.Group()
 		self.bullet_list = pygame.sprite.Group()
-		self.gameover = False
+		self.ebullet_list = pygame.sprite.Group()
 
 
 	def render(self, DISPLAYSURF):
@@ -144,18 +157,26 @@ class GameScene(Scene):
 		self.enemy_list.update() # makes enemies move
 		self.bullet_list.draw(DISPLAYSURF) # draws the bullets
 		self.bullet_list.update() # ensures the bullets move
+		self.ebullet_list.draw(DISPLAYSURF)
+		self.ebullet_list.update()
 
 		# Enemy Creation Code. Everytime it updates it creates an enemy
 		enemy = sprites.Enemy()
-		enemy.spawn()
-		self.enemy_list.add(enemy)
+		enemybullet = sprites.EnemyBullet()
+		if random.randint(1,10) <= self.level:
+			enemy.spawn(DISPLAYSURF)
+			self.enemy_list.add(enemy)
+			enemybullet.spawn(enemy.getmidx(), enemy.getmidy())
+			self.ebullet_list.add(enemybullet)
+
 
 		# Bullet creation code. Everytime it updates it'll create a bullet
 		bullet = sprites.Bullet()
 		bullet.spawn(self.mousex, self.mousey)
 		self.bullet_list.add(bullet)
 
-		enemy.remove(self.enemy_list, self.cat_list)
+		enemy.remove(self.enemy_list, self.cat_list, DISPLAYSURF)
+		enemybullet.remove(self.ebullet_list, self.cat_list, DISPLAYSURF)
 		bullet.remove(self.bullet_list, self.enemy_list)
 		pass
 	
