@@ -36,6 +36,7 @@ class SceneManager(object):
 class TitleScene(object):
 	def __init__(self, DISPLAYSURF):
 		super(TitleScene, self).__init__()
+		
 		# width and height of the button/image
 		self.DISPLAYSURF = DISPLAYSURF
 		self.imagew = 300
@@ -56,6 +57,7 @@ class TitleScene(object):
 		# title = self.font.render(nameOfGame, True, BLACK)
 		# DISPLAYSURF.blit(title, self.buttonlocation)
 
+	# Handles events that occur
 	def handle_events(self, events):
 		for event in events:
 			if event.type == MOUSEMOTION:
@@ -72,12 +74,54 @@ class TitleScene(object):
 				pass
 			elif event.type == MOUSEBUTTONDOWN:
 				if self.onButton == True:
-					self.manager.go_to(GameScene())
+					self.manager.go_to(GameScene(self.DISPLAYSURF))
+				pass
+
+class GameOver(object):
+	def __init__(self, DISPLAYSURF):
+		super(GameOver, self).__init__()
+
+		self.DISPLAYSURF = DISPLAYSURF
+		self.imagew = 300
+		self.imageh = 100
+		self.image = pygame.Surface([self.imagew, self.imageh])
+		self.image.fill(BLUE)
+		self.rect = self.image.get_rect()
+		self.hwidth = self.image.get_width()/2
+		self.hheight = self.image.get_height()/2
+
+		# location coords
+		self.buttonlocation = (DISPLAYSURF.get_width()/2-self.hwidth, DISPLAYSURF.get_height()/2-self.hheight)
+		self.onButton = False
+
+	def render(self, DISPLAYSURF):
+		DISPLAYSURF.blit(self.image, self.buttonlocation)
+
+	# Handles events that occur
+	def handle_events(self, events):
+		for event in events:
+			if event.type == MOUSEMOTION:
+				mousex, mousey = event.pos
+				if((mousex > self.buttonlocation[0] and mousex < self.buttonlocation[0] + self.imagew)
+					and (mousey > self.buttonlocation[1] and mousey < self.buttonlocation[1] + self.imageh)):
+					self.image.fill(BLACK)
+					self.onButton = True
+				else:
+					self.onButton = False
+					self.image.fill(BLUE)
+
+			elif event.type == MOUSEBUTTONUP:
+				pass
+			elif event.type == MOUSEBUTTONDOWN:
+				if self.onButton == True:
+					self.manager.go_to(GameScene(self.DISPLAYSURF))
 				pass
 
 class GameScene(Scene):
-	def __init__(self):
+	def __init__(self, DISPLAYSURF):
 		super(GameScene, self).__init__()
+		
+		self.DISPLAYSURF = DISPLAYSURF
 		# sets mouse location
 		self.mousex = 0
 		self.mousey = 0
@@ -90,6 +134,7 @@ class GameScene(Scene):
 		self.cat_list.add(self.cat)
 		self.enemy_list = pygame.sprite.Group()
 		self.bullet_list = pygame.sprite.Group()
+		self.gameover = False
 
 
 	def render(self, DISPLAYSURF):
@@ -99,9 +144,27 @@ class GameScene(Scene):
 		self.enemy_list.update() # makes enemies move
 		self.bullet_list.draw(DISPLAYSURF) # draws the bullets
 		self.bullet_list.update() # ensures the bullets move
+
+		# Enemy Creation Code. Everytime it updates it creates an enemy
+		enemy = sprites.Enemy()
+		enemy.spawn()
+		self.enemy_list.add(enemy)
+
+		# Bullet creation code. Everytime it updates it'll create a bullet
+		bullet = sprites.Bullet()
+		bullet.spawn(self.mousex, self.mousey)
+		self.bullet_list.add(bullet)
+
+		enemy.remove(self.enemy_list, self.cat_list)
+		bullet.remove(self.bullet_list, self.enemy_list)
 		pass
 	
 	def handle_events(self, events):
+		# check if cat is still alive
+		if not self.cat_list:
+			print 'Gameover'
+			self.manager.go_to(GameOver(self.DISPLAYSURF))
+
 		for event in events:
 			if event.type == MOUSEMOTION:
 				self.mousex, self.mousey = event.pos

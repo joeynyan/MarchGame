@@ -83,7 +83,6 @@ while True:
 			print('cat dead')
 			gameover = True
 
-
 		if enemy.rect.y >= GameHeight+20:
 			enemy_list.remove(enemy)
 
