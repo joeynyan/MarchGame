@@ -138,11 +138,11 @@ class GameScene(Scene):
 		self.level = level
 		self.clock = pygame.time.Clock()
 
-		# clock = level*20 seconds
-		pygame.time.set_timer(pygame.USEREVENT, 2*10*level*20)
+		# clock = level*10 seconds
+		pygame.time.set_timer(pygame.USEREVENT, 2*10*level*10)
 		self.font = pygame.font.SysFont('Consolas', 30)
-		self.counter = 2*level*20
-		self.text = str(level*20/2).rjust(3)
+		self.counter = 2*level*10
+		self.text = str(self.counter/2).rjust(3) + '  Level ' + str(self.level)
 
 		# sets mouse location
 		self.mousex = 0
@@ -171,7 +171,7 @@ class GameScene(Scene):
 		self.ebullet_list.update()
 		DISPLAYSURF.blit(self.font.render(self.text, True, (0, 0, 0)), (32, 48))
 
-		# Enemy Creation Code. Everytime it updates it creates an enemy
+		# Enemy Creation Code. Everytime it updates it creates an enemy and ebullet
 		enemy = sprites.Enemy()
 		enemybullet = sprites.EnemyBullet()
 		if random.randint(1,10) <= self.level:
@@ -180,6 +180,11 @@ class GameScene(Scene):
 			enemybullet.spawn(enemy.getmidx(), enemy.getmidy())
 			self.ebullet_list.add(enemybullet)
 
+		#enemy reshooting code
+		for enemy in self.enemy_list:
+			if enemy.shoot(DISPLAYSURF) == True:
+				enemybullet.spawn(enemy.getmidx(), enemy.getmidy())
+				self.ebullet_list.add(enemybullet)
 
 		# Bullet creation code. Everytime it updates it'll create a bullet
 		bullet = sprites.Bullet()
@@ -211,5 +216,5 @@ class GameScene(Scene):
 				pass
 			elif event.type == pygame.USEREVENT:
 				self.counter -= 1;
-				self.text = str(self.counter/2).rjust(3)
+				self.text = str(self.counter/2).rjust(3) + '  Level ' + str(self.level)
 
