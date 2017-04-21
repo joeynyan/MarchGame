@@ -55,6 +55,8 @@ class TitleScene(object):
 		self.hwidth = self.image.get_width()/2
 		self.hheight = self.image.get_height()/2
 
+		self.score = 0
+
 		# location coords
 		self.buttonlocation = (DISPLAYSURF.get_width()/2-self.hwidth, DISPLAYSURF.get_height()/2-self.hheight)
 		self.onButton = False
@@ -83,7 +85,7 @@ class TitleScene(object):
 			elif event.type == MOUSEBUTTONDOWN:
 				if self.onButton == True:
 					level = 1
-					self.manager.go_to(GameScene(self.DISPLAYSURF, level))
+					self.manager.go_to(GameScene(self.DISPLAYSURF, level, self.score))
 				pass
 
 
@@ -100,6 +102,8 @@ class GameOver(object):
 		self.rect = self.image.get_rect()
 		self.hwidth = self.image.get_width()/2
 		self.hheight = self.image.get_height()/2
+
+		self.score = 0
 
 		# location coords
 		self.buttonlocation = (DISPLAYSURF.get_width()/2-self.hwidth, DISPLAYSURF.get_height()/2-self.hheight)
@@ -126,16 +130,17 @@ class GameOver(object):
 			elif event.type == MOUSEBUTTONDOWN:
 				if self.onButton == True:
 					level = 1
-					self.manager.go_to(GameScene(self.DISPLAYSURF, level))
+					self.manager.go_to(GameScene(self.DISPLAYSURF, level, self.score))
 				pass
 
 class GameScene(Scene):
-	def __init__(self, DISPLAYSURF, level):
+	def __init__(self, DISPLAYSURF, level, score):
 		super(GameScene, self).__init__()
 		
 		# screen and starting level (level determines how quickly enemy spawns (too quick))
 		self.DISPLAYSURF = DISPLAYSURF
 		self.level = level
+		self.score = score
 		self.clock = pygame.time.Clock()
 
 		# clock = level*10 seconds
@@ -169,7 +174,8 @@ class GameScene(Scene):
 		self.bullet_list.update() # ensures the bullets move
 		self.ebullet_list.draw(DISPLAYSURF)
 		self.ebullet_list.update()
-		DISPLAYSURF.blit(self.font.render(self.text, True, (0, 0, 0)), (32, 48))
+		DISPLAYSURF.blit(self.font.render(self.text, True, BLACK), (32, 48))
+		DISPLAYSURF.blit(self.font.render(str(self.score).rjust(4), True, BLACK), (DISPLAYSURF.get_width() - 50, 48))
 
 		# Enemy Creation Code. Everytime it updates it creates an enemy and ebullet
 		enemy = sprites.Enemy()
@@ -193,7 +199,7 @@ class GameScene(Scene):
 
 		enemy.remove(self.enemy_list, self.cat_list, DISPLAYSURF)
 		enemybullet.remove(self.ebullet_list, self.cat_list, DISPLAYSURF)
-		bullet.remove(self.bullet_list, self.enemy_list)
+		self.score = bullet.remove(self.bullet_list, self.enemy_list, self.score)
 		pass
 	
 	def handle_events(self, events):
@@ -205,7 +211,7 @@ class GameScene(Scene):
 		if self.counter <= 0:
 			print 'Level up'
 			self.level += 1
-			self.manager.go_to(GameScene(self.DISPLAYSURF, self.level))
+			self.manager.go_to(GameScene(self.DISPLAYSURF, self.level, self.score))
 		for event in events:
 			if event.type == MOUSEMOTION:
 				self.mousex, self.mousey = event.pos

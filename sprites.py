@@ -95,16 +95,18 @@ class Bullet(pygame.sprite.Sprite):
     	self.rect.x = mousex
     	self.rect.y = mousey
 
-    def remove(self, bullet_list, enemy_list):
+    def remove(self, bullet_list, enemy_list, score):
     	# Removes Bullet sprite when it goes off the screen and kills enemies
 		for bullet in bullet_list:
 			hit_list = pygame.sprite.spritecollide(bullet, enemy_list, True)
 			for enemy in hit_list:
 				bullet_list.remove(bullet)
 				enemy_list.remove(enemy)
+				score += 1
 
 			if bullet.rect.y <= -10:
 				bullet_list.remove(bullet)
+		return score
 
 class EnemyBullet(pygame.sprite.Sprite):
 	def __init__(self):
